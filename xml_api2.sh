@@ -168,9 +168,9 @@ waits() { # waits <pid_array> <command>
 }
 
 # Grab API Key
-api_key=$(curl --insecure --silent --request GET "$api?type=keygen&user=$user&password=$password" | xpath -q -e '/response/result/key/text()')
+api_key=$(curl --insecure --silent --request --header="X-PAN-KEY: $api_key" GET "$api?type=keygen&user=$user&password=$password" | xpath -q -e '/response/result/key/text()')
 
-hash=$(curl --insecure --silent --request GET "$api?type=op&cmd=<request><password-hash><password>$new_password</password></password-hash></request>&key=$api_key" | xmllint --xpath 'string(//phash)' -)
+hash=$(curl --insecure --silent --request --header="X-PAN-KEY: $api_key" GET "$api?type=op&cmd=<request><password-hash><password>$new_password</password></password-hash></request>&key=$api_key" | xmllint --xpath 'string(//phash)' -)
 
 action "set" "Change Admin Password" "/config/mgt-config/users/entry[@name='admin']/phash" "<phash>$hash</phash>"
 
