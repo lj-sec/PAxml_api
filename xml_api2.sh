@@ -107,7 +107,8 @@ action() { # action <action> <description> <xpath>/<cmd> <element>
     response_code=$(echo $response | xmllint --xpath 'string(/response/@code)' -)
     response_status=$(echo $response | xmllint --xpath 'string(/response/@status)' -)
     message=$(echo $response | xmllint --xpath 'string(/response/msg)' -)
-    
+    echo $response
+
     if [ ! -z "$response_code" ] # If the response contains a response code
     then
         if [ "$response_code" == "20" ] # Success
