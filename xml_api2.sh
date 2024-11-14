@@ -25,11 +25,12 @@ device_xpath="/config/devices/entry[@name='$pan_device']"
 vsys_xpath="/vsys/entry[@name='$pan_vsys']"
 script_name="xml_api.sh"
 usage="./$script_name"
+repo_root=$(git rev-parse --show-toplevel)
 api="https://$host/api/" # api baseurl
 job_status_poll_speed=3 # Speed (in seconds) that the script checks for the commit status
 
 # Import environment variables (ekurc)
-. ../../config_files/ekurc
+. $repo_root/config_files/ekurc
 
 ## CONFIG CHECKS
 
