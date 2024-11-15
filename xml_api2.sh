@@ -287,7 +287,7 @@ fi
 
 # Prompt user input to change PA admin password
 while : ; do
-    read -p "Enter new password to change Palo Alto Default: " new_password
+    read -s -p "Enter new password to change Palo Alto Default: " new_password
 
     # Check if the password meets the requirements
     if [[ ${#new_password} -lt 8 ]]; then
@@ -304,7 +304,7 @@ while : ; do
         continue
     fi
 
-    read -p "Confirm new password: " confirm_password
+    read -s -p "Confirm new password: " confirm_password
 
     # Check if passwords match
     if [[ $new_password != $confirm_password ]]; then
@@ -785,11 +785,8 @@ action "edit" "Change Admin Password" "/config/mgt-config/users/entry[@name='adm
 
 commit "Final commit"
 
-# Test Delete Admin Sessions independently
-curl --insecure --silent --request POST --header "$header" "https://$host/api/?type=op&cmd=<delete><admin-sessions></admin-sessions></delete>"
-  
-# Test Clear All Sessions independently
-curl --insecure --silent --request POST --header "$header" "https://$host/api/?type=op&cmd=<clear><session><all/></session></clear>"
+# Kill All Admin Sessions
+action "op" "Delete Admin Sessions" "<delete><admin-sessions></admin-sessions></delete>&key=$api_key"
 
 success "Script Complete!"
 
