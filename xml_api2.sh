@@ -287,22 +287,25 @@ fi
 
 # Prompt user input to change PA admin password
 while : ; do
+    printf "\n"
     read -s -p "Enter new password to change Palo Alto Default: " new_password
 
     # Check if the password meets the requirements
     if [[ ${#new_password} -lt 8 ]]; then
-        echo "Password must be at least 8 characters long."
+        printf "\nPassword must be at least 8 characters long."
         continue
     elif [[ ! "$new_password" =~ [A-Z] ]]; then
-        echo "Password must contain at least one uppercase letter."
+        printf "\nPassword must contain at least one uppercase letter."
         continue
     elif [[ ! "$new_password" =~ [a-z] ]]; then
-        echo "Password must contain at least one lowercase letter."
+        printf "\nPassword must contain at least one lowercase letter."
         continue
     elif [[ ! "$new_password" =~ [0-9\W] ]]; then
-        echo "Password must contain at least one number or special character."
+        printf "\nPassword must contain at least one number or special character."
         continue
     fi
+
+    printf "\n"
 
     read -s -p "Confirm new password: " confirm_password
 
