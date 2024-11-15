@@ -287,11 +287,33 @@ fi
 
 # Prompt user input to change PA admin password
 while : ; do
-    read -p "Enter new password to change Palo Alto Default (ensure 8 chars long, 1 uppercase, 1 lowercase, and 1 number/special char): " new_password
+    read -p "Enter new password to change Palo Alto Default:" new_password
+
+    # Check if the password meets the requirements
+    if [[ ${#new_password} -lt 8 ]]; then
+        echo "Password must be at least 8 characters long."
+        continue
+    elif [[ ! "$new_password" =~ [A-Z] ]]; then
+        echo "Password must contain at least one uppercase letter."
+        continue
+    elif [[ ! "$new_password" =~ [a-z] ]]; then
+        echo "Password must contain at least one lowercase letter."
+        continue
+    elif [[ ! "$new_password" =~ [0-9\W] ]]; then
+        echo "Password must contain at least one number or special character."
+        continue
+    fi
+
     read -p "Confirm new password: " confirm_password
-    if []
-    [[ $new_password != $confirm_password ]] || break
-    echo "Passwords did not match."
+
+    # Check if passwords match
+    if [[ $new_password != $confirm_password ]]; then
+        echo "Passwords did not match."
+        continue
+    fi
+
+    # All checks pass, break loop
+    break
 done
 
 ## END CONFIG CHECKS
