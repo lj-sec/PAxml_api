@@ -287,7 +287,7 @@ fi
 
 # Prompt user input to change PA admin password
 while : ; do
-    read -p "Enter new password to change Palo Alto Default:" new_password
+    read -p "Enter new password to change Palo Alto Default: " new_password
 
     # Check if the password meets the requirements
     if [[ ${#new_password} -lt 8 ]]; then
@@ -778,18 +778,18 @@ action "set" "Url filter" "$full_xpath/profiles/url-filtering/entry[@name='url-f
 '
 
 # Grab hash of user-entered password
-hash=$(curl --insecure --silent --request GET --header "X-PAN-KEY: $api_key" "$api?type=op&cmd=<request><password-hash><password>$new_password</password></password-hash></request>&key=$api_key" | xmllint --xpath 'string(//phash)' -)
+hash=$(curl --insecure --silent --request GET --header "$header" "$api?type=op&cmd=<request><password-hash><password>$new_password</password></password-hash></request>&key=$api_key" | xmllint --xpath 'string(//phash)' -)
 
 # Using hashed password, change Palo Alto admin password
 action "edit" "Change Admin Password" "/config/mgt-config/users/entry[@name='admin']/phash" "<phash>$hash</phash>"
 
 commit "Final commit"
 
-# Kill All Admin Sessions
-action "op" "Delete Admin Sessions" "<delete><admin-sessions></admin-sessions></delete>"
-
-# Clear All Sessions
-action "op" "Clear All Sessions" "<clear><session><all/></session></clear>"
+# Test Delete Admin Sessions independently
+curl --insecure --silent --request POST --header "$header" "https://$host/api/?type=op&cmd=<delete><admin-sessions></admin-sessions></delete>"
+  
+# Test Clear All Sessions independently
+curl --insecure --silent --request POST --header "$header" "https://$host/api/?type=op&cmd=<clear><session><all/></session></clear>"
 
 success "Script Complete!"
 
