@@ -1,0 +1,48 @@
+# firewall_config.yaml
+firewall:
+  host: "172.20.242.150"  # Firewall hostname or IP address
+  api_port: 443                # API port (use 443 for HTTPS)
+  username: "admin"            # Login username
+  password: "1234"  # Login password (avoid storing in plaintext if possible)
+
+api:
+  api:
+  actions:
+    - name: "Block Outbound Blacklisted"
+      type: "policy"
+      payload:
+        xpath: "$sec_policy_xpath[@name='deny-blacklist-egress']"
+        to_zone:
+          - "External"
+        from_zone:
+          - "Internal"
+          - "Public"
+          - "User"
+        source:
+          - "any"
+        destination:
+          - "blacklist"
+        source_user:
+          - "any"
+        category:
+          - "any"
+        application:
+          - "any"
+        service:
+          - "any"
+        source_hip:
+          - "any"
+        destination_hip:
+          - "any"
+        action: "drop"
+        icmp_unreachable: "yes"
+        description: "Drop traffic with a blacklisted destination address from leaving the network perimeter."
+        log_setting: "Splunk"
+
+logs:
+  enable: true                 # Enable logging of script execution
+  file: "/var/log/firewall_script.log"  # Log file path
+
+security:
+  use_https: true              # Enforce HTTPS
+  validate_certificate: true   # Validate SSL/TLS certificates

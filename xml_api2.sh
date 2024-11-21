@@ -11,13 +11,13 @@
 # Usage: <./xml_api2.sh>
 
 # Edit variables as required:
-host="172.20.242.150" # CHANGEME! - Palo Alto host IP addr
+host="172.20.242.150" # CHANGEME! - Palo Alto host IP address
 management_subnet="172.20.242.0/24" # CHANGEME! - Palo Alto management subnet
 team_number=0 # CHANGEME! - CCDC Team Number
-user="admin" # - Admin username
 password="1234" # CHANGEME! - Admin default/current password
 
 # Do not touch these variables unless you know what you are doing:
+user="admin" # - Admin username
 third_octet=$((20+$team_number))
 pan_device="localhost.localdomain"
 pan_vsys="vsys1"
