@@ -1,12 +1,19 @@
-# firewall_config.yaml
 firewall:
   host: "172.20.242.150"  # Firewall hostname or IP address
-  api_port: 443                # API port (use 443 for HTTPS)
-  username: "admin"            # Login username
-  password: "1234"  # Login password (avoid storing in plaintext if possible)
+  api_port: 443           # API port (use 443 for HTTPS)
+  team_number: 0          # CCDC Team number
+  username: "admin"       # Login username
+  password: "1234"        # Login password
+
+logs:
+  enable: true                 # Enable logging of script execution
+  file: "/var/log/firewall_script.log"  # Log file path
+
+security:
+  use_https: true              # Enforce HTTPS
+  validate_certificate: true   # Validate SSL/TLS certificates
 
 api:
-  api:
   actions:
     - name: "Block Outbound Blacklisted"
       type: "policy"
@@ -38,11 +45,3 @@ api:
         icmp_unreachable: "yes"
         description: "Drop traffic with a blacklisted destination address from leaving the network perimeter."
         log_setting: "Splunk"
-
-logs:
-  enable: true                 # Enable logging of script execution
-  file: "/var/log/firewall_script.log"  # Log file path
-
-security:
-  use_https: true              # Enforce HTTPS
-  validate_certificate: true   # Validate SSL/TLS certificates

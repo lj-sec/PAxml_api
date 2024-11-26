@@ -17,7 +17,7 @@ team_number=0 # CHANGEME! - CCDC Team Number
 password="1234" # CHANGEME! - Admin default/current password
 
 # Do not touch these variables unless you know what you are doing:
-user="admin" # - Admin username
+user="admin" # Admin username
 third_octet=$((20+$team_number))
 pan_device="localhost.localdomain"
 pan_vsys="vsys1"
@@ -232,7 +232,7 @@ create_address_groups() { # create_address_groups
 
     # Create DNS Servers NAT Address Group
     action "set" "DNS Servers NAT Address Group" "$addr_group_xpath[@name='dns-servers-nat']" "<static><member>debian-dns-ntp-nat</member><member>windows-server-2019-nat</member></static>" &
-
+  
     # Create NTP Servers Address Group
     action "set" "NTP Servers Address Group" "$addr_group_xpath[@name='ntp-servers']" "<static><member>debian-dns-ntp</member></static>" &
 
