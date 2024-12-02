@@ -1,3 +1,5 @@
+identifier="[\e[35m$script_name\e[0m]"
+
 # Functions to make output pretty.
 info() {
     # Cyan
@@ -22,4 +24,9 @@ error() {
 success() {
     # Green
     echo -e "$identifier[\e[32mSUCCESS\e[0m] $*"
+}
+
+check_security() {
+    # N/A
+    # Real ekurc: https://github.com/ravesec/eku-ccdc/blob/main/config_files/ekurc
 }

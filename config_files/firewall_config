@@ -1,0 +1,17 @@
+# FIREWALL #
+
+host="172.20.242.150"                   # Firewall hostname or IP address
+api_port=443                            # API port (use 443 for HTTPS)
+team_number=0                           # CCDC Team number
+username="admin"                        # Login username
+password="1234"                         # Login password
+
+# LOGS #
+
+enable=true                             # Enable logging of script execution
+file="/var/log/firewall_script.log"     # Log file path
+
+# SECURITY #
+
+use_https=true                          # Enforce HTTPS
+change_pass=true                        # Change PA password during script execution

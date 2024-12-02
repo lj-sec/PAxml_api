@@ -5,31 +5,39 @@
 # xml_api2.sh
 #
 # Description: A bash script that configures the firewall automatically using Palo Alto's XML API
-# UPDATE VARIABLES BELOW
+# UPDATE VARIABLES IN /config_files/firewall_config
 
 # Created 11/14/2024
 # Usage: <./xml_api2.sh>
 
-# Edit variables as required:
-host="172.20.242.150" # CHANGEME! - Palo Alto host IP address
-management_subnet="172.20.242.0/24" # CHANGEME! - Palo Alto management subnet
-team_number=0 # CHANGEME! - CCDC Team Number
-password="1234" # CHANGEME! - Admin default/current password
+## CONFIG
 
-# Do not touch these variables unless you know what you are doing:
-user="admin" # Admin username
+# Establish root of repo
+repo_root=$(git rev-parse --show-toplevel)
+
+# Script variables (do not touch unless you know what you are modifying)
+script_name="xml_api2.sh"
+usage="./$script_name"
 third_octet=$((20+$team_number))
+job_status_poll_speed=3 # Speed (in seconds) that the script checks for the commit status
+
+# Import environment variables (ekurc)
+. $repo_root/config_files/ekurc || { echo "Failed: Could not import ekurc file" >&2; exit 1; }
+
+# Import the configuration variables (firewall_config)
+. $repo_root/config_files/firewall_config || { error "Failed: Could not import firewall_config file" >&2; exit 1; }
+
+# Check for https
+if [ $user_https = true ]
+then api="https://$host:$api_port/api/"
+else api="http://$host:$api_port/api/"
+fi
+
+# Define xpaths for quick access (do not touch unless you know what you are modifying)
 pan_device="localhost.localdomain"
 pan_vsys="vsys1"
 device_xpath="/config/devices/entry[@name='$pan_device']"
 vsys_xpath="/vsys/entry[@name='$pan_vsys']"
-script_name="xml_api.sh"
-usage="./$script_name"
-repo_root=$(git rev-parse --show-toplevel)
-api="https://$host/api/" # api baseurl
-job_status_poll_speed=3 # Speed (in seconds) that the script checks for the commit status
-
-# Define xpaths for quick access
 full_xpath="$device_xpath$vsys_xpath"
 mgmt_profile_xpath="$device_xpath/network/profiles/interface-management-profile/entry"
 eth_interface_xpath="$device_xpath/network/interface/ethernet/entry"
@@ -44,16 +52,90 @@ sec_policy_xpath="$full_xpath/rulebase/security/rules/entry"
 dsec_policy_xpath="$full_xpath/rulebase/default-security-rules/rules/entry"
 tag_object_xpath="$full_xpath/tag/entry"
 
-# Import environment variables (ekurc)
-. $repo_root/config_files/ekurc
-
 # Updating and upgrading apt
 apt update -y && apt upgrade -y
 
 # Install dependencies
 apt install -y libxml-xpath-perl libxml2-utils jq findutils curl
 
-# FUNCTIONS:
+# From ekurc, check for repository security (perms set correctly to 0750)
+check_security
+
+# Superuser requirement.
+if [ "$EUID" -ne 0 ]
+then error "This script must be ran as root!" >&2
+    exit 1
+fi
+
+# Check for the correct number of arguments
+if [ "$#" -gt 0 ]
+then error $usage >&2
+    exit 1
+fi
+
+# Check for default team number
+if [ "$team_number" -eq 0 ]
+then error "Team number cannot be set to default!" >&2
+    exit 1
+fi
+
+# Check for default password
+if [ "$password" == "1234" ]
+then error "Password cannot be set to default!" >&2
+    exit 1
+fi
+
+# Display current vars to the user
+warn "Ensure all variables are set correctly!\nHost: $host\nManagement Subnet: $management_subnet\nUser: $user\nPassword: $password\nTeam Number: $team_number\nThird Octet: $third_octet\nDevice: $pan_device\nVirtual System: $pan_vsys\n\nProceed running script? (continue with any key or 'n' to quit)\n"
+read -n 1 -s yn
+if [ "$yn" == "n" ]
+then
+    error "User quit!" >&2
+    exit 1
+else
+    info "Continuing!"
+fi
+
+# Prompt user input to change PA admin password
+if [ $change_pass = true ]
+then
+  while : ; do
+      printf "\n"
+      read -s -p "Enter new password to change Palo Alto Default: " new_password
+  
+      # Check if the password meets the requirements
+      if [[ ${#new_password} -lt 8 ]]; then
+          printf "\nPassword must be at least 8 characters long."
+          continue
+      elif [[ ! "$new_password" =~ [A-Z] ]]; then
+          printf "\nPassword must contain at least one uppercase letter."
+          continue
+      elif [[ ! "$new_password" =~ [a-z] ]]; then
+          printf "\nPassword must contain at least one lowercase letter."
+          continue
+      elif [[ ! "$new_password" =~ [0-9\W] ]]; then
+          printf "\nPassword must contain at least one number or special character."
+          continue
+      fi
+  
+      printf "\n"
+  
+      read -s -p "Confirm new password: " confirm_password
+  
+      # Check if passwords match
+      if [[ $new_password != $confirm_password ]]; then
+          echo "Passwords did not match."
+          continue
+      fi
+  
+      # All checks pass, break loop
+      break
+  done
+fi
+
+## END CONFIG CHECKS
+
+## FUNCTIONS
 
 # Action function for calling the Palo Alto API and recieving response codes
 action() { # action <action> <description> <xpath>/<cmd> <element>
@@ -243,83 +325,7 @@ create_address_groups() { # create_address_groups
     wait
 }
 
-# END FUNCTIONS
-
-## CONFIG CHECKS
-
-# From ekurc, check for repository security (perms set correctly to 0750)
-check_security
-
-# Superuser requirement.
-if [ "$EUID" -ne 0 ]
-then error "This script must be ran as root!"
-    exit 1
-fi
-
-# Check for the correct number of arguments
-if [ "$#" -gt 0 ]
-then error $usage
-    exit 1
-fi
-
-# Check for default team number
-if [ "$team_number" -eq 0 ]
-then error "Team number cannot be set to default!"
-    exit 1
-fi
-
-# Check for default password
-if [ "$password" == "1234" ]
-then error "Password cannot be set to default!"
-    exit 1
-fi
-
-# Display current vars to the user
-warn "Ensure all variables are set correctly!\nHost: $host\nManagement Subnet: $management_subnet\nUser: $user\nPassword: $password\nTeam Number: $team_number\nThird Octet: $third_octet\nDevice: $pan_device\nVirtual System: $pan_vsys\n\nProceed running script? (continue with any key or 'n' to quit)\n"
-read -n 1 -s yn
-if [ "$yn" == "n" ]
-then
-    error "User quit!"
-    exit 1
-else
-    info "Continuing!"
-fi
-
-# Prompt user input to change PA admin password
-while : ; do
-    printf "\n"
-    read -s -p "Enter new password to change Palo Alto Default: " new_password
-
-    # Check if the password meets the requirements
-    if [[ ${#new_password} -lt 8 ]]; then
-        printf "\nPassword must be at least 8 characters long."
-        continue
-    elif [[ ! "$new_password" =~ [A-Z] ]]; then
-        printf "\nPassword must contain at least one uppercase letter."
-        continue
-    elif [[ ! "$new_password" =~ [a-z] ]]; then
-        printf "\nPassword must contain at least one lowercase letter."
-        continue
-    elif [[ ! "$new_password" =~ [0-9\W] ]]; then
-        printf "\nPassword must contain at least one number or special character."
-        continue
-    fi
-
-    printf "\n"
-
-    read -s -p "Confirm new password: " confirm_password
-
-    # Check if passwords match
-    if [[ $new_password != $confirm_password ]]; then
-        echo "Passwords did not match."
-        continue
-    fi
-
-    # All checks pass, break loop
-    break
-done
-
-## END CONFIG CHECKS
+## END FUNCTIONS
 
 # Grab API Key
 api_key=$(curl --insecure --silent --request GET "$api?type=keygen&user=$user&password=$password" | xpath -q -e '/response/result/key/text()')
@@ -331,14 +337,14 @@ user_list=$(curl --insecure --silent --request GET --header "$header" "$api?type
 # Parse the xml and put the names into an array
 readarray -t usernames <<< "$(echo $user_list | sed -e 's/name="\([^"]*\)"/\1\n/g')"
 
-# For each username except for 'admin', delete that user.
-for username in "${usernames[@]}"
+# For each username except for current username, delete that user.
+for user in "${usernames[@]}"
 do
-    if [ "$username" != "admin" ]
+    if [ "$user" != "$username" ]
     then
         # Strip username of whitespace
-        username=$(echo $username | xargs)
-        action "delete" "Management User '$username'" "/config/mgt-config/users/entry[@name='$username']" &
+        user=$(echo $user | xargs)
+        action "delete" "Management User '$user'" "/config/mgt-config/users/entry[@name='$user']" &
     fi
 done
 
