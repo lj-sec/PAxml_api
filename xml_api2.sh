@@ -33,7 +33,7 @@ if [ -f "$repo_root/config_files/firewall_config" ]
 then
     . "$repo_root/config_files/firewall_config"
 else
-    error "Failed: Could not find firewall_config file" >&2
+    error "Failed: Could not find firewall_config file" 
     exit 1
 fi
 
@@ -41,7 +41,7 @@ fi
 third_octet=$((20+$team_number))
 
 # Check for https
-if [ $user_https = true ]
+if [ $use_https = true ]
 then
     api="https://$host:$api_port/api/"
 else
@@ -78,25 +78,25 @@ check_security
 
 # Superuser requirement.
 if [ "$EUID" -ne 0 ]
-then error "This script must be ran as root!" >&2
+then error "This script must be ran as root!" 
     exit 1
 fi
 
 # Check for the correct number of arguments
 if [ "$#" -gt 0 ]
-then error $usage >&2
+then error $usage 
     exit 1
 fi
 
 # Check for default team number
 if [ "$team_number" -eq 0 ]
-then error "Team number cannot be set to default!" >&2
+then error "Team number cannot be set to default!" 
     exit 1
 fi
 
 # Check for default password
 if [ "$password" == "1234" ]
-then error "Password cannot be set to default!" >&2
+then error "Password cannot be set to default!" 
     exit 1
 fi
 
@@ -105,7 +105,7 @@ warn "Ensure all variables are set correctly!\nHost: $host\nManagement Subnet: $
 read -n 1 -s yn
 if [ "$yn" == "n" ]
 then
-    error "User quit!" >&2
+    error "User quit!" 
     exit 1
 else
     info "Continuing!"

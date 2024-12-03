@@ -27,6 +27,7 @@ success() {
 }
 
 check_security() {
+    :
     # N/A
     # Real ekurc: https://github.com/ravesec/eku-ccdc/blob/main/config_files/ekurc
 }
