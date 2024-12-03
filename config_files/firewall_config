@@ -5,6 +5,7 @@ api_port=443                            # API port (use 443 for HTTPS)
 team_number=0                           # CCDC Team number
 username="admin"                        # Login username
 password="1234"                         # Login password
+job_status_poll_speed=3                 # Speed (in seconds) that the script checks for the commit status
 
 # LOGS #
 

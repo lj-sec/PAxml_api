@@ -15,22 +15,37 @@
 # Establish root of repo
 repo_root=$(git rev-parse --show-toplevel)
 
-# Script variables (do not touch unless you know what you are modifying)
+# Name variables
 script_name="xml_api2.sh"
 usage="./$script_name"
-third_octet=$((20+$team_number))
-job_status_poll_speed=3 # Speed (in seconds) that the script checks for the commit status
 
 # Import environment variables (ekurc)
-. $repo_root/config_files/ekurc || { echo "Failed: Could not import ekurc file" >&2; exit 1; }
+if [ -f "$repo_root/config_files/ekurc" ]
+then
+    . "$repo_root/config_files/ekurc"
+else
+    echo "Failed: Could not find ekurc file" >&2
+    exit 1
+fi
 
 # Import the configuration variables (firewall_config)
-. $repo_root/config_files/firewall_config || { error "Failed: Could not import firewall_config file" >&2; exit 1; }
+if [ -f "$repo_root/config_files/firewall_config" ]
+then
+    . "$repo_root/config_files/firewall_config"
+else
+    error "Failed: Could not find firewall_config file" >&2
+    exit 1
+fi
+
+# Grab third octet from config file
+third_octet=$((20+$team_number))
 
 # Check for https
 if [ $user_https = true ]
-then api="https://$host:$api_port/api/"
-else api="http://$host:$api_port/api/"
+then
+    api="https://$host:$api_port/api/"
+else
+    api="http://$host:$api_port/api/"
 fi
 
 # Define xpaths for quick access (do not touch unless you know what you are modifying)
@@ -241,7 +256,7 @@ create_security_policies() { # create_security_policies
     wait
 
     # Outbound Company Traffic
-    action "set" "Security Policy 'Outbound Company Traffic'" "$sec_policy_xpath[@name='company-egress']" "<to><member>External</member></to><from><member>Internal</member><member>Public</member><member>User</member></from><source><member>any</member></source><destination><member>any</member></destination><source-user><member>any</member></source-user><category><member>any</member></category><application><member>dns</member><member>icmp-ping</member><member>linux-updates</member><member>ntp</member><member>web-traffic</member><member>webmail</member><member>windows-updates</member></application><service><member>application-default</member></service><source-hip><member>any</member></source-hip><destination-hip><member>any</member></destination-hip><action>allow</action><description>Controls which company traffic is permitted to exit the network perimeter.</description><log-setting>Splunk</log-setting>"
+    action "set" "Security Policy 'Outbound Company Traffic'" "$sec_policy_xpath[@name='company-egress']" "<to><member>External</member></to><from><member>Internal</member><member>Public</member><member>User</member></from><source><member>any</member></source><destination><member>any</member></destination><source-user><member>any</member></source-user><category><member>any</member></category><application><member>dns</member><member>icmp-ping</member><member>linux-updates</member><member>ntp</member><member>web-traffic</member><member>webmail</member><member>windows-updates</member></application><service><member>application-default</member></service><source-hip><member>any</member></source-hip><destination-hip><member>any</member></destination-hip><action>allow</action><description>Controls which company traffic is permitted to exit the network perimeter.</description><log-setting>Splunk</log-setting>" &
 
     # External to Public
     action "set" "Security Policy 'External to Public'" "$sec_policy_xpath[@name='external-to-public']" "<to><member>Public</member></to><from><member>External</member></from><source><member>any</member></source><destination><member>public-network-servers-nat</member></destination><source-user><member>any</member></source-user><category><member>any</member></category><application><member>icmp-ping</member><member>linux-updates</member><member>web-traffic</member><member>webmail</member></application><service><member>application-default</member></service><source-hip><member>any</member></source-hip><destination-hip><member>any</member></destination-hip><action>allow</action><description>Controls which traffic is permitted to enter the public network from the external network.</description><log-setting>Splunk</log-setting>" &
