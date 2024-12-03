@@ -101,7 +101,7 @@ then error "Password cannot be set to default!" >&2
 fi
 
 # Display current vars to the user
-warn "Ensure all variables are set correctly!\nHost: $host\nManagement Subnet: $management_subnet\nUser: $user\nPassword: $password\nTeam Number: $team_number\nThird Octet: $third_octet\nDevice: $pan_device\nVirtual System: $pan_vsys\n\nProceed running script? (continue with any key or 'n' to quit)\n"
+warn "Ensure all variables are set correctly!\nHost: $host\nManagement Subnet: $management_subnet\nUser: $username\nPassword: $password\nTeam Number: $team_number\nThird Octet: $third_octet\nDevice: $pan_device\nVirtual System: $pan_vsys\n\nProceed running script? (continue with any key or 'n' to quit)\n"
 read -n 1 -s yn
 if [ "$yn" == "n" ]
 then
